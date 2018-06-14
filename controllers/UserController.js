@@ -3,8 +3,7 @@ const User = require('../models/User')
 //create a user profile
 exports.newUser = (req, res) => {
   User.create({
-    name: req.body.name,
-    email: req.body.email,
+    username: req.body.username,
     password: req.body.password
   },
   (err, user) => {
