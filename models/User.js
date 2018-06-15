@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
     password: String
 })
 
-userSchema.pre('save', function(next) {
+UserSchema.pre('save', function(next) {
 
   const user = this
 
@@ -21,7 +21,7 @@ userSchema.pre('save', function(next) {
   })
 })
 
-userSchema.methods.comparePassword = function(candidatePassword, callback) {
+UserSchema.methods.comparePassword = function(candidatePassword, callback) {
   bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
     if(err) { return callback(err) }
 
