@@ -37,15 +37,23 @@ exports.getOnePoll = (req, res) => {
 }
 
 exports.pollVote = (req, res) => {
-  const { voter, answer } = req.body
-  const { id } = req.params
+  const { userId, answer } = req.body
+  const pollId = req.params.id
+  const voter = userId || req.ip
   const update = { $inc: { [`answers.${answer}`]: 1}, $push: { voter }}
   const config = { new: true }
 
-  Poll.findByIdAndUpdate(id, update, config, (err, poll) => {
-    if (err) return next(err)
-    if(!poll) return res.status(404).send({ success: false, msg: 'poll id not found'})
-    res.send({ success: true, poll })
+  Poll.findOne({ _id: pollId, voter: { $elemMatch: { $in: [voter] } } }, function(err, doc) {
+    if (err) return res.send(err)
+    if (doc) {
+      return res.status(403).send({success: false, msg: 'user already voted'})
+    } else if (doc === null) {
+      Poll.findByIdAndUpdate(pollId, update, config, (err, poll) => {
+        if (err) return next(err)
+        if(!poll) return res.status(404).send({ success: false, msg: 'poll id not found'})
+        res.send({ success: true, poll })
+      })
+    }
   })
 }
 
