@@ -37,12 +37,8 @@ exports.getOnePoll = (req, res) => {
 }
 
 exports.pollVote = (req, res) => {
-  // check for userID, if null, get req.ip
-  // store either userID or req.ip in a variable called voter  or something
-
   const { userId, answer } = req.body
   const pollId = req.params.id
-  console.log(userId, answer, req.ip)
   const voter = userId || req.ip
   const update = { $inc: { [`answers.${answer}`]: 1}, $push: { voter }}
   const config = { new: true }
@@ -50,8 +46,7 @@ exports.pollVote = (req, res) => {
   Poll.findOne({ _id: pollId, voter: { $elemMatch: { $in: [voter] } } }, function(err, doc) {
     if (err) return res.send(err)
     if (doc) {
-      // userId or IP address hal already voted
-      // send an error back to the client
+      return res.status(403).send({success: false, msg: 'user already voted'})
     } else if (doc === null) {
       Poll.findByIdAndUpdate(pollId, update, config, (err, poll) => {
         if (err) return next(err)
